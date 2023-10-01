@@ -8,51 +8,55 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func getPasswordForLevel(level int) string {
+	switch level {
+	case 0:
+		return "natas0"
+	case 1:
+		return levels.GetLevel1Password()
+	case 2:
+		level1Password := levels.GetLevel1Password()
+		return levels.GetLevel2Password(level1Password)
+	case 3:
+		level1Password := levels.GetLevel1Password()
+		level2Password := levels.GetLevel2Password(level1Password)
+		return levels.GetLevel3Password(level2Password)
+	case 4:
+		level1Password := levels.GetLevel1Password()
+		level2Password := levels.GetLevel2Password(level1Password)
+		level3Password := levels.GetLevel3Password(level2Password)
+		return levels.GetLevel4Password(level3Password)
+	case 5:
+		level1Password := levels.GetLevel1Password()
+		level2Password := levels.GetLevel2Password(level1Password)
+		level3Password := levels.GetLevel3Password(level2Password)
+		level4Password := levels.GetLevel4Password(level3Password)
+		return levels.GetLevel5Password(level4Password)
+	case 6:
+		level1Password := levels.GetLevel1Password()
+		level2Password := levels.GetLevel2Password(level1Password)
+		level3Password := levels.GetLevel3Password(level2Password)
+		level4Password := levels.GetLevel4Password(level3Password)
+		level5Password := levels.GetLevel5Password(level4Password)
+		return levels.GetLevel6Password(level5Password)
+	default:
+		return ""
+	}
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "natas-cobra",
 	Short: "Get natas passwords",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		level, _ := cmd.Flags().GetInt("level")
-		if level == 0 {
-			println("User: natas0")
-			println("Password: natas0")
-
-		} else if level == 1 {
-			var level1Password = levels.GetLevel1Password()
-			println("User: natas1")
-			fmt.Printf("Password: %s\n", level1Password)
-
-		} else if level == 2 {
-			var level1Password = levels.GetLevel1Password()
-			var level2Password = levels.GetLevel2Password(level1Password)
-			println("User: natas2")
-			fmt.Printf("Password: %s\n", level2Password)
-
-		} else if level == 3 {
-			var level1Password = levels.GetLevel1Password()
-			var level2Password = levels.GetLevel2Password(level1Password)
-			var level3Password = levels.GetLevel3Password(level2Password)
-			println("User: natas3")
-			fmt.Printf("Password: %s\n", level3Password)
-
-		} else if level == 4 {
-			var level1Password = levels.GetLevel1Password()
-			var level2Password = levels.GetLevel2Password(level1Password)
-			var level3Password = levels.GetLevel3Password(level2Password)
-			var level4Password string = levels.GetLevel4Password(level3Password)
-			println("User: natas4")
-			fmt.Printf("Password: %s\n", level4Password)
-
-		} else if level == 5 {
-			var level1Password = levels.GetLevel1Password()
-			var level2Password = levels.GetLevel2Password(level1Password)
-			var level3Password = levels.GetLevel3Password(level2Password)
-			var level4Password string = levels.GetLevel4Password(level3Password)
-			var level5Password string = levels.GetLevel5Password(level4Password)
-			println("User: natas5")
-			fmt.Printf("Password: %s\n", level5Password)
+		password := getPasswordForLevel(level)
+		if password == "" {
+			fmt.Println("Password not found")
+			return
 		}
+		fmt.Printf("User: natas%d\n", level)
+		fmt.Printf("Password: %s\n", password)
 	},
 }
 
