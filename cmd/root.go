@@ -43,6 +43,15 @@ var rootCmd = &cobra.Command{
 			var level4Password string = levels.GetLevel4Password(level3Password)
 			println("User: natas4")
 			fmt.Printf("Password: %s\n", level4Password)
+
+		} else if level == 5 {
+			var level1Password = levels.GetLevel1Password()
+			var level2Password = levels.GetLevel2Password(level1Password)
+			var level3Password = levels.GetLevel3Password(level2Password)
+			var level4Password string = levels.GetLevel4Password(level3Password)
+			var level5Password string = levels.GetLevel5Password(level4Password)
+			println("User: natas5")
+			fmt.Printf("Password: %s\n", level5Password)
 		}
 	},
 }
