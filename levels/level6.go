@@ -13,7 +13,7 @@ type Post struct {
 	Secret string `json:"secret"`
 }
 
-func getSecret(client *http.Client, username string, password string) string {
+func getSecretFromLevel6(client *http.Client, username string, password string) string {
 	req, err := http.NewRequest("GET", "http://natas6.natas.labs.overthewire.org/includes/secret.inc", nil)
 	if err != nil {
 		log.Fatal(err)
@@ -43,7 +43,7 @@ func GetLevel7Password(password string) string {
 	var username string = "natas6"
 	client := &http.Client{}
 
-	var secret string = getSecret(client, username, password)
+	var secret string = getSecretFromLevel6(client, username, password)
 
 	form := url.Values{}
 	form.Add("secret", secret)

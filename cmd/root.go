@@ -56,6 +56,16 @@ func getPasswordForLevel(level int) string {
 		level6Password := levels.GetLevel6Password(level5Password)
 		level7Password := levels.GetLevel7Password(level6Password)
 		return levels.GetLevel8Password(level7Password)
+	case 9:
+		level1Password := levels.GetLevel1Password()
+		level2Password := levels.GetLevel2Password(level1Password)
+		level3Password := levels.GetLevel3Password(level2Password)
+		level4Password := levels.GetLevel4Password(level3Password)
+		level5Password := levels.GetLevel5Password(level4Password)
+		level6Password := levels.GetLevel6Password(level5Password)
+		level7Password := levels.GetLevel7Password(level6Password)
+		level8Password := levels.GetLevel8Password(level7Password)
+		return levels.GetLevel9Password(level8Password)
 	default:
 		return ""
 	}
