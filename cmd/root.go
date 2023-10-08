@@ -2,10 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"natas/levels"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func getPasswordForLevel(level int) string {
@@ -107,19 +111,69 @@ func getPasswordForLevel(level int) string {
 	}
 }
 
+type NatasPassword struct {
+	Username string
+	Password string
+}
+
+func getDatabaseEnvironmentVariable(key string) string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return os.Getenv(key)
+}
+
+func savePasswordInDatabase(levelUsername string, levelPassword string) error {
+	host := getDatabaseEnvironmentVariable("HOST")
+	dbUser := getDatabaseEnvironmentVariable("USER")
+	dbPassword := getDatabaseEnvironmentVariable("PASSWORD")
+	dbName := getDatabaseEnvironmentVariable("DBNAME")
+	port := getDatabaseEnvironmentVariable("PORT")
+	sslMode := getDatabaseEnvironmentVariable("SSLMODE")
+	timezone := getDatabaseEnvironmentVariable("TIMEZONE")
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s", host, dbUser, dbPassword, dbName, port, sslMode, timezone)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	level := NatasPassword{Username: levelUsername, Password: levelPassword}
+
+	result := db.Create(&level)
+	println("[+] Credentials correctly saved in the database.")
+	if result.Error != nil {
+		log.Fatal(result.Error)
+	}
+
+	return nil
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "natas-cobra",
 	Short: "Get natas passwords",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		level, _ := cmd.Flags().GetInt("level")
+		save, _ := cmd.Flags().GetBool("save")
+
 		password := getPasswordForLevel(level)
 		if password == "" {
-			fmt.Println("Password not found")
 			return
 		}
-		fmt.Printf("User: natas%d\n", level)
+
+		username := fmt.Sprintf("natas%d", level)
+
+		fmt.Printf("User: %s\n", username)
 		fmt.Printf("Password: %s\n", password)
+
+		if save {
+			err := savePasswordInDatabase(username, password)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 	},
 }
 
@@ -134,4 +188,5 @@ func Execute() {
 func init() {
 	var level int
 	rootCmd.Flags().IntVarP(&level, "level", "l", 1, "the number of the level to get the password")
+	rootCmd.Flags().Bool("save", false, "save the password of the level in the database")
 }
