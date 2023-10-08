@@ -150,6 +150,31 @@ func savePasswordInDatabase(levelUsername string, levelPassword string) error {
 	return nil
 }
 
+func getPasswordFromDatabase(username string) string {
+	host := getDatabaseEnvironmentVariable("HOST")
+	dbUser := getDatabaseEnvironmentVariable("USER")
+	dbPassword := getDatabaseEnvironmentVariable("PASSWORD")
+	dbName := getDatabaseEnvironmentVariable("DBNAME")
+	port := getDatabaseEnvironmentVariable("PORT")
+	sslMode := getDatabaseEnvironmentVariable("SSLMODE")
+	timezone := getDatabaseEnvironmentVariable("TIMEZONE")
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s", host, dbUser, dbPassword, dbName, port, sslMode, timezone)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	credential := NatasPassword{}
+
+	result := db.Where("username = ?", username).First(&credential)
+	if result.Error != nil {
+		log.Fatal(result.Error)
+	}
+
+	return credential.Password
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "natas-cobra",
 	Short: "Get natas passwords",
@@ -157,13 +182,20 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		level, _ := cmd.Flags().GetInt("level")
 		save, _ := cmd.Flags().GetBool("save")
+		db, _ := cmd.Flags().GetBool("db")
 
-		password := getPasswordForLevel(level)
+		var password string
+		username := fmt.Sprintf("natas%d", level)
+
+		if db {
+			password = getPasswordFromDatabase(username)
+		} else {
+			password = getPasswordForLevel(level)
+		}
+
 		if password == "" {
 			return
 		}
-
-		username := fmt.Sprintf("natas%d", level)
 
 		fmt.Printf("User: %s\n", username)
 		fmt.Printf("Password: %s\n", password)
@@ -189,4 +221,5 @@ func init() {
 	var level int
 	rootCmd.Flags().IntVarP(&level, "level", "l", 1, "the number of the level to get the password")
 	rootCmd.Flags().Bool("save", false, "save the password of the level in the database")
+	rootCmd.Flags().Bool("db", false, "obtain the passwords from the database")
 }
